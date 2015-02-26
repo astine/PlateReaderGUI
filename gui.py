@@ -3,6 +3,7 @@
 import wxversion
 wxversion.select('2.8')
 import wx
+import wx.lib.mixins.inspection as wit
 
 running = False
 
@@ -31,7 +32,7 @@ class MainFrame(wx.Frame):
     def __init__(self,parent,title):
         wx.Frame.__init__(self, parent, title=title, size=(600,450))
 
-        panel = wx.Panel(self,-1)
+        panel = wx.Panel(self,-1, style=wx.BORDER_SIMPLE)
         sizer = wx.GridBagSizer(4, 4)
         sizer.AddGrowableRow(0)
         sizer.AddGrowableCol(2)
@@ -44,11 +45,11 @@ class MainFrame(wx.Frame):
         bmsizer = wx.GridBagSizer(4, 4)
         bmsizer.AddGrowableRow(0)
         bmsizer.AddGrowableCol(2)
+        bmsizer.SetEmptyCellSize((200,100))
         
         self.button = wx.Button(self.bitmap, label="Start", size=(80, 30))
         bmsizer.Add(self.button, pos=(3,3), span=(1,1),  flag=wx.ALL, border=5)
         self.bitmap.SetSizerAndFit(bmsizer)
-        panel.SetSize(size=(500,500))
 
         sizer.Add(self.bitmap, pos=(0,1), span=(4,3), flag=wx.EXPAND, border=5)
 
@@ -56,6 +57,11 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_LISTBOX, self.OnListSelect, self.listbox)
 
         panel.SetSizerAndFit(sizer)
+
+        mainSizer = wx.BoxSizer(wx.VERTICAL)
+        mainSizer.Add(panel,1,wx.EXPAND,0)
+        self.SetSizerAndFit(mainSizer)
+
         self.Center()
         self.Show(True)
 
@@ -71,5 +77,8 @@ class MainFrame(wx.Frame):
         pass
 
 app = wx.App(False)
+#app = wit.InspectableApp()
+#wx.lib.inspection.InspectionTool().Show()
 frame = MainFrame(None, "Plate Scanner GUI")
 app.MainLoop()
+
