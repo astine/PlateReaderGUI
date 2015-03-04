@@ -7,6 +7,7 @@ import wx.lib.mixins.inspection as wit
 
 running = False
 
+# Custom panel class with an image background
 class ImagePanel(wx.Panel):
     def __init__(self, parent, image_file):
         wx.Panel.__init__(self, parent=parent)
@@ -15,7 +16,7 @@ class ImagePanel(wx.Panel):
 
         self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
 
-    def SetImage(image_file):
+    def SetImage(self, image_file):
         self.image_file = image_file
 
     def OnEraseBackground(self, evt):
@@ -32,8 +33,11 @@ class ImagePanel(wx.Panel):
         bmp = wx.Bitmap(self.image_file)
         dc.DrawBitmap(bmp, 0, 0)
 
+# Custom listbox class which takes an ImagePanel and sets
+# its background
 class PlateListBox(wx.ListBox):
     def __init__(self, parent, image_panel):
+        wx.ListBox.__init__(self, parent=parent)
         self.images = {}
         self.image_panel = image_panel
 
@@ -41,12 +45,11 @@ class PlateListBox(wx.ListBox):
 
     def Add(self, plate_number, image_file):
         self.images[plate_number] = image_file
-        self.InsertItems([plate_number])
+        self.InsertItems([plate_number],0)
 
     def OnSelect(self, evt):
-        dlg = wx.MessageDialog(parent, question, caption, wx.YES_NO | wx.ICON_QUESTION)
-        result = dlg.ShowModal() == wx.ID_YES
-        dlg.Destroy()
+        self.image_panel.SetImage(self.images[evt.GetString()])
+        self.image_panel.Refresh()
 
 class MainFrame(wx.Frame):
 
@@ -58,10 +61,10 @@ class MainFrame(wx.Frame):
         sizer.AddGrowableRow(0)
         sizer.AddGrowableCol(2)
 
-        self.listbox = wx.ListBox(panel)
-        sizer.Add(self.listbox, pos=(0,0), span=(4,1), flag=wx.EXPAND, border=5)
-
         self.bitmap = ImagePanel(self, None)
+
+        self.listbox = PlateListBox(panel, self.bitmap)
+        sizer.Add(self.listbox, pos=(0,0), span=(4,1), flag=wx.EXPAND, border=5)
 
         bmsizer = wx.GridBagSizer(4, 4)
         bmsizer.AddGrowableRow(0)
@@ -82,6 +85,11 @@ class MainFrame(wx.Frame):
         mainSizer = wx.BoxSizer(wx.VERTICAL)
         mainSizer.Add(panel,1,wx.EXPAND,0)
         self.SetSizerAndFit(mainSizer)
+
+        #--
+        # test code
+        self.listbox.Add("test", "test.jpg")
+        #--
 
         self.Center()
         self.Show(True)
