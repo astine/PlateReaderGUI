@@ -15,7 +15,13 @@ class ImagePanel(wx.Panel):
 
         self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
 
+    def SetImage(image_file):
+        self.image_file = image_file
+
     def OnEraseBackground(self, evt):
+        if (self.image_file == None):
+            return None
+
         dc = evt.GetDC()
 
         if not dc:
@@ -26,6 +32,21 @@ class ImagePanel(wx.Panel):
         bmp = wx.Bitmap(self.image_file)
         dc.DrawBitmap(bmp, 0, 0)
 
+class PlateListBox(wx.ListBox):
+    def __init__(self, parent, image_panel):
+        self.images = {}
+        self.image_panel = image_panel
+
+        self.Bind(wx.EVT_LISTBOX, self.OnSelect)
+
+    def Add(self, plate_number, image_file):
+        self.images[plate_number] = image_file
+        self.InsertItems([plate_number])
+
+    def OnSelect(self, evt):
+        dlg = wx.MessageDialog(parent, question, caption, wx.YES_NO | wx.ICON_QUESTION)
+        result = dlg.ShowModal() == wx.ID_YES
+        dlg.Destroy()
 
 class MainFrame(wx.Frame):
 
@@ -40,7 +61,7 @@ class MainFrame(wx.Frame):
         self.listbox = wx.ListBox(panel)
         sizer.Add(self.listbox, pos=(0,0), span=(4,1), flag=wx.EXPAND, border=5)
 
-        self.bitmap = ImagePanel(self,"test.jpg")
+        self.bitmap = ImagePanel(self, None)
 
         bmsizer = wx.GridBagSizer(4, 4)
         bmsizer.AddGrowableRow(0)
